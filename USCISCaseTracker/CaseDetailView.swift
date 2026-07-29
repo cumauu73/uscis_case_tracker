@@ -25,7 +25,7 @@ struct CaseDetailView: View {
                     HStack {
                         Label(current.formType, systemImage: "doc.text")
                         Spacer()
-                        Text(current.receiptNumber)
+                        Text(current.maskedReceiptNumber)
                             .font(.caption.monospaced())
                     }
                     .font(.subheadline)

@@ -47,5 +47,9 @@ struct CaseRecord: Codable, Hashable, Identifiable {
     var displayName: String {
         nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? formType : nickname
     }
-}
 
+    var maskedReceiptNumber: String {
+        guard receiptNumber.count > 4 else { return receiptNumber }
+        return String(repeating: "*", count: receiptNumber.count - 4) + receiptNumber.suffix(4)
+    }
+}

@@ -4,5 +4,18 @@ DerivedData/
 *.xccheckout
 .DS_Store
 .env
+.env.*
 Secrets.xcconfig
+Private.xcconfig
+*.xcuserdatad/
+build/
+Build/
+*.ipa
+*.dSYM
 
+# Local personal case data. Do not commit real receipt numbers or exported case files.
+receipt-numbers*.txt
+receipts*.txt
+case-data*.json
+cases-export*.json
+local-cases*.json
