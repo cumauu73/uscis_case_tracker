@@ -1,0 +1,8 @@
+xcuserdata/
+DerivedData/
+*.xcuserstate
+*.xccheckout
+.DS_Store
+.env
+Secrets.xcconfig
+
