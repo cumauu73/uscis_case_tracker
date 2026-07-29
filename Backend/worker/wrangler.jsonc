@@ -3,6 +3,13 @@
   "name": "mycaseupdates-api",
   "main": "src/index.js",
   "compatibility_date": "2026-07-29",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "api.mycaseupdates.app",
+      "custom_domain": true
+    }
+  ],
   "observability": {
     "enabled": true
   },
@@ -12,6 +19,6 @@
     "USCIS_CASE_STATUS_PATH_TEMPLATE": "/case-status/{receiptNumber}",
     "USCIS_SCOPE": "",
     "CACHE_TTL_SECONDS": "300",
-    "MOCK_USCIS_RESPONSES": "false"
+    "MOCK_USCIS_RESPONSES": "true"
   }
 }
