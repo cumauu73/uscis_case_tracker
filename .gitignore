@@ -19,3 +19,9 @@ receipts*.txt
 case-data*.json
 cases-export*.json
 local-cases*.json
+
+# Cloudflare Worker local files
+Backend/worker/node_modules/
+Backend/worker/.wrangler/
+Backend/worker/.dev.vars
+Backend/worker/.dev.vars.*

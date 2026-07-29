@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mycaseupdates-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-29",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "APP_ENV": "production",
+    "USCIS_BASE_URL": "https://api-int.uscis.gov",
+    "USCIS_CASE_STATUS_PATH_TEMPLATE": "/case-status/{receiptNumber}",
+    "USCIS_SCOPE": "",
+    "CACHE_TTL_SECONDS": "300",
+    "MOCK_USCIS_RESPONSES": "false"
+  }
+}
