@@ -7,6 +7,7 @@ struct AddCaseView: View {
     @State private var nickname = ""
     @State private var attemptedSave = false
     @State private var showingPremium = false
+    @State private var saveErrorMessage: String?
 
     private var normalizedNumber: String {
         ReceiptNumber.normalized(receiptNumber)
@@ -25,6 +26,11 @@ struct AddCaseView: View {
                         }
                     if attemptedSave && !ReceiptNumber.isValid(receiptNumber) {
                         Label("Enter 3 letters followed by 10 numbers.", systemImage: "exclamationmark.circle")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                    if let saveErrorMessage {
+                        Label(saveErrorMessage, systemImage: "exclamationmark.circle")
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
@@ -66,20 +72,41 @@ struct AddCaseView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        attemptedSave = true
-                        if store.add(receiptNumber: receiptNumber, nickname: nickname) {
-                            dismiss()
-                        } else if !store.canAddCase {
-                            showingPremium = true
-                        }
+                        save()
                     }
                     .fontWeight(.semibold)
-                    .disabled(!store.canAddCase)
                 }
             }
             .sheet(isPresented: $showingPremium) {
                 PremiumView()
             }
+        }
+    }
+
+    private func save() {
+        attemptedSave = true
+        saveErrorMessage = nil
+
+        let number = normalizedNumber
+        guard ReceiptNumber.isValid(number) else {
+            saveErrorMessage = "Enter 3 letters followed by 10 numbers."
+            return
+        }
+
+        guard !store.cases.contains(where: { $0.receiptNumber == number }) else {
+            saveErrorMessage = "This case is already being tracked."
+            return
+        }
+
+        guard store.canAddCase else {
+            showingPremium = true
+            return
+        }
+
+        if store.add(receiptNumber: number, nickname: nickname) {
+            dismiss()
+        } else {
+            saveErrorMessage = "Unable to save this case. Please check the receipt number and try again."
         }
     }
 }
