@@ -8,9 +8,14 @@ struct CaseStatusResponse: Decodable {
     let updatedAt: Date
 }
 
+private struct BackendErrorResponse: Decodable {
+    let message: String
+}
+
 enum CaseStatusServiceError: LocalizedError {
     case backendNotConfigured
     case invalidResponse
+    case backendMessage(String)
 
     var errorDescription: String? {
         switch self {
@@ -18,6 +23,8 @@ enum CaseStatusServiceError: LocalizedError {
             "Live checking is not configured yet. Add your secure backend URL first."
         case .invalidResponse:
             "The status service returned an unexpected response."
+        case .backendMessage(let message):
+            message
         }
     }
 }
@@ -39,6 +46,9 @@ struct CaseStatusService {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
+            if let error = try? JSONDecoder().decode(BackendErrorResponse.self, from: data) {
+                throw CaseStatusServiceError.backendMessage(error.message)
+            }
             throw CaseStatusServiceError.invalidResponse
         }
 
@@ -47,4 +57,3 @@ struct CaseStatusService {
         return try decoder.decode(CaseStatusResponse.self, from: data)
     }
 }
-
