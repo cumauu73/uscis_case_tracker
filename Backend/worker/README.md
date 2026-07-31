@@ -26,6 +26,7 @@ Test:
 
 ```bash
 curl http://localhost:8787/health
+curl http://localhost:8787/v1/plans
 curl http://localhost:8787/v1/cases/IOE0912345678
 ```
 
@@ -46,10 +47,16 @@ USCIS_BASE_URL
 USCIS_CASE_STATUS_PATH_TEMPLATE
 USCIS_SCOPE
 CACHE_TTL_SECONDS
+FREE_CASE_LIMIT
+PREMIUM_CASE_LIMIT
+FREE_REFRESH_INTERVAL_MINUTES
+PREMIUM_REFRESH_INTERVAL_MINUTES
 MOCK_USCIS_RESPONSES=false
 ```
 
 The current `USCIS_CASE_STATUS_PATH_TEMPLATE` is a placeholder. Replace it with the exact USCIS sandbox/production path from the USCIS Developer Portal.
+
+When App Store subscriptions are enabled, add the App Store server-side verification credentials as Worker secrets. Until then, `/v1/entitlements/verify` deliberately returns a free entitlement with `verificationStatus: "not_configured"`.
 
 ## Deploy
 
@@ -70,7 +77,19 @@ In Cloudflare Dashboard:
 ## API Contract
 
 ```text
+GET /v1/plans
+```
+
+Returns Free and Premium pricing, feature, and limit metadata for the iOS paywall.
+
+```text
 GET /v1/cases/:receiptNumber
+```
+
+Optional request header while StoreKit server-side verification is pending:
+
+```text
+X-Subscription-Tier: free | premium
 ```
 
 Response:
@@ -81,6 +100,31 @@ Response:
   "formType": "USCIS Case",
   "title": "Case Status Check Ready",
   "description": "Mock response from the My Case Updates API.",
-  "updatedAt": "2026-07-29T00:00:00.000Z"
+  "updatedAt": "2026-07-29T00:00:00.000Z",
+  "plan": {
+    "tier": "free",
+    "limits": {
+      "caseLimit": 2,
+      "automaticRefreshIntervalMinutes": 0,
+      "pushNotifications": false,
+      "automaticChecks": false
+    },
+    "source": "request_header_until_storekit_verification"
+  }
 }
 ```
+
+```text
+POST /v1/entitlements/verify
+```
+
+Request:
+
+```json
+{
+  "appAccountToken": "stable-user-token",
+  "transactionId": "app-store-transaction-id"
+}
+```
+
+This endpoint is ready for StoreKit server-side verification, but the verification logic should only be enabled after App Store Connect subscription products exist.

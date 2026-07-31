@@ -19,6 +19,10 @@
     "USCIS_CASE_STATUS_PATH_TEMPLATE": "/case-status/{receiptNumber}",
     "USCIS_SCOPE": "",
     "CACHE_TTL_SECONDS": "300",
+    "FREE_CASE_LIMIT": "2",
+    "PREMIUM_CASE_LIMIT": "10",
+    "FREE_REFRESH_INTERVAL_MINUTES": "0",
+    "PREMIUM_REFRESH_INTERVAL_MINUTES": "60",
     "MOCK_USCIS_RESPONSES": "true"
   }
 }

@@ -32,11 +32,20 @@ async function handleRequest(request, env, context) {
     return jsonResponse({ ok: true, service: "mycaseupdates-api" });
   }
 
+  if (request.method === "GET" && url.pathname === "/v1/plans") {
+    return jsonResponse(planCatalog(env));
+  }
+
+  if (request.method === "POST" && url.pathname === "/v1/entitlements/verify") {
+    return jsonResponse(await verifyEntitlement(request, env));
+  }
+
   const match = url.pathname.match(/^\/v1\/cases\/([^/]+)$/);
   if (request.method !== "GET" || !match) {
     return jsonResponse({ error: "not_found", message: "Route not found." }, 404);
   }
 
+  const plan = requestedPlan(request);
   const receiptNumber = normalizeReceiptNumber(match[1]);
   if (!receiptPattern.test(receiptNumber)) {
     return jsonResponse(
@@ -45,23 +54,70 @@ async function handleRequest(request, env, context) {
     );
   }
 
-  const cache = caches.default;
-  const cacheKey = new Request(`https://cache.mycaseupdates.app/v1/cases/${receiptNumber}`, request);
-  const cached = await cache.match(cacheKey);
-  if (cached) {
-    return cached;
+  const cache = globalThis.caches?.default;
+  const cacheKey = new Request(`https://cache.mycaseupdates.app/v1/cases/${receiptNumber}?plan=${plan}`, request);
+  if (cache) {
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      return cached;
+    }
   }
 
-  const responseBody = isMockEnabled(env)
+  const status = isMockEnabled(env)
     ? mockCaseStatus(receiptNumber)
     : await fetchUSCISCaseStatus(receiptNumber, env);
+  const responseBody = {
+    ...status,
+    plan: planMetadata(plan, env)
+  };
 
   const response = jsonResponse(responseBody, 200, {
     "Cache-Control": `public, max-age=${cacheTTL(env)}`
   });
 
-  context.waitUntil(cache.put(cacheKey, response.clone()));
+  if (cache) {
+    context.waitUntil(cache.put(cacheKey, response.clone()));
+  }
+
   return response;
+}
+
+async function verifyEntitlement(request, env) {
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {
+    throw new ServiceError("invalid_json", "Request body must be valid JSON.", 400);
+  }
+
+  const appAccountToken = typeof body.appAccountToken === "string" ? body.appAccountToken : "";
+  const transactionId = typeof body.transactionId === "string" ? body.transactionId : "";
+
+  if (!appAccountToken || !transactionId) {
+    throw new ServiceError(
+      "missing_purchase_information",
+      "Purchase verification requires an app account token and transaction id.",
+      400
+    );
+  }
+
+  if (!env.APP_STORE_SHARED_SECRET && !env.APP_STORE_ISSUER_ID) {
+    return {
+      tier: "free",
+      isPremium: false,
+      verificationStatus: "not_configured",
+      message: "App Store server-side purchase verification is not configured yet.",
+      limits: limitsForPlan("free", env)
+    };
+  }
+
+  return {
+    tier: "free",
+    isPremium: false,
+    verificationStatus: "pending_implementation",
+    message: "App Store purchase verification credentials are present, but verification logic has not been enabled.",
+    limits: limitsForPlan("free", env)
+  };
 }
 
 async function fetchUSCISCaseStatus(receiptNumber, env) {
@@ -150,6 +206,66 @@ function mockCaseStatus(receiptNumber) {
   };
 }
 
+function planCatalog(env) {
+  return {
+    free: {
+      name: "Free",
+      price: "$0",
+      limits: limitsForPlan("free", env),
+      features: [
+        "Track up to 2 cases",
+        "Manual refresh",
+        "Masked receipt numbers",
+        "Basic status history"
+      ]
+    },
+    premium: {
+      name: "Premium",
+      monthlyPrice: "$1.99",
+      yearlyPrice: "$14.99",
+      productIds: {
+        monthly: "mycaseupdates.premium.monthly",
+        yearly: "mycaseupdates.premium.yearly"
+      },
+      limits: limitsForPlan("premium", env),
+      features: [
+        "Track up to 10 cases",
+        "Automatic backend checks",
+        "Push notifications for status changes",
+        "Priority refresh",
+        "Richer status history"
+      ]
+    }
+  };
+}
+
+function planMetadata(plan, env) {
+  return {
+    tier: plan,
+    limits: limitsForPlan(plan, env),
+    source: "request_header_until_storekit_verification"
+  };
+}
+
+function limitsForPlan(plan, env) {
+  const isPremium = plan === "premium";
+  return {
+    caseLimit: numberFromEnv(env, isPremium ? "PREMIUM_CASE_LIMIT" : "FREE_CASE_LIMIT", isPremium ? 10 : 2),
+    automaticRefreshIntervalMinutes: numberFromEnv(
+      env,
+      isPremium ? "PREMIUM_REFRESH_INTERVAL_MINUTES" : "FREE_REFRESH_INTERVAL_MINUTES",
+      isPremium ? 60 : 0
+    ),
+    pushNotifications: isPremium,
+    automaticChecks: isPremium
+  };
+}
+
+function requestedPlan(request) {
+  const value = request.headers.get("X-Subscription-Tier")?.toLowerCase();
+  return value === "premium" ? "premium" : "free";
+}
+
 function firstString(object, keys) {
   for (const key of keys) {
     const value = object?.[key];
@@ -171,6 +287,11 @@ function maskReceiptNumber(receiptNumber) {
 function cacheTTL(env) {
   const value = Number(env.CACHE_TTL_SECONDS ?? "300");
   return Number.isFinite(value) && value >= 0 ? value : 300;
+}
+
+function numberFromEnv(env, key, fallback) {
+  const value = Number(env[key]);
+  return Number.isFinite(value) ? value : fallback;
 }
 
 function isMockEnabled(env) {
@@ -198,7 +319,7 @@ function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization"
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Subscription-Tier"
   };
 }
 
