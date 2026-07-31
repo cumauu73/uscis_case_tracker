@@ -12,6 +12,7 @@ final class CaseStore {
     var isPremium = false
     private let storageKey = "saved-cases-v1"
     private let service = CaseStatusService()
+    private let legacyBackendPlaceholder = "Connect your secure backend to retrieve the latest USCIS status."
 
     var caseLimit: Int {
         isPremium ? Self.premiumCaseLimit : Self.freeCaseLimit
@@ -107,7 +108,14 @@ final class CaseStore {
               let saved = try? JSONDecoder().decode([CaseRecord].self, from: data) else {
             return
         }
-        cases = saved
+        cases = saved.map { record in
+            var migrated = record
+            if migrated.statusDescription == legacyBackendPlaceholder {
+                migrated.statusDescription = "Tap Check Latest Status to retrieve the latest available case status."
+            }
+            return migrated
+        }
+        save()
     }
 
     private func save() {

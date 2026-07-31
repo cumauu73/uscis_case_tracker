@@ -30,7 +30,7 @@ struct CaseRecord: Codable, Hashable, Identifiable {
         nickname: String = "",
         formType: String = "USCIS Case",
         statusTitle: String = "Ready to Check",
-        statusDescription: String = "Connect your secure backend to retrieve the latest USCIS status.",
+        statusDescription: String = "Tap Check Latest Status to retrieve the latest available case status.",
         lastCheckedAt: Date = .now,
         events: [CaseEvent] = []
     ) {
