@@ -154,7 +154,7 @@ private struct CaseRow: View {
                 .font(.subheadline)
                 .foregroundStyle(AppTheme.status)
             HStack {
-                Text(record.maskedReceiptNumber)
+                Text(record.receiptNumber)
                     .font(.caption.monospaced())
                 Spacer()
                 Text(record.lastCheckedAt, style: .relative)
