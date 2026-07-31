@@ -137,11 +137,14 @@ async function fetchUSCISCaseStatus(receiptNumber, env) {
   });
 
   if (!response.ok) {
+    const upstreamMessage = response.status === 404
+      ? "USCIS did not return a status for this receipt number. The current backend uses the USCIS sandbox endpoint, so only USCIS sandbox test receipt numbers are available until production USCIS credentials are enabled."
+      : "Unable to retrieve case status.";
     console.error("USCIS status request failed", {
       status: response.status,
       receiptNumber: maskReceiptNumber(receiptNumber)
     });
-    throw new ServiceError("uscis_request_failed", "Unable to retrieve case status.", response.status);
+    throw new ServiceError("uscis_request_failed", upstreamMessage, response.status);
   }
 
   const data = await response.json();

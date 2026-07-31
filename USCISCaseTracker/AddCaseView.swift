@@ -17,7 +17,7 @@ struct AddCaseView: View {
         NavigationStack {
             Form {
                 Section("Receipt Number") {
-                    TextField("IOE0912345678", text: $receiptNumber)
+                    TextField("EAC9999103402", text: $receiptNumber)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
                         .font(.body.monospaced())
@@ -104,7 +104,13 @@ struct AddCaseView: View {
         }
 
         if store.add(receiptNumber: number, nickname: nickname) {
+            let addedCase = store.cases.first { $0.receiptNumber == number }
             dismiss()
+            if let addedCase {
+                Task {
+                    await store.refresh(addedCase)
+                }
+            }
         } else {
             saveErrorMessage = "Unable to save this case. Please check the receipt number and try again."
         }

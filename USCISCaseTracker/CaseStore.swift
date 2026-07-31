@@ -93,7 +93,7 @@ final class CaseStore {
         )
         cases = [
             CaseRecord(
-                receiptNumber: "IOE0912345678",
+                receiptNumber: "EAC9999103402",
                 nickname: "My Application",
                 formType: "I-485",
                 statusTitle: "Case Is Being Actively Reviewed",
