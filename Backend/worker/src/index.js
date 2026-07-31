@@ -187,12 +187,17 @@ function buildCaseStatusURL(receiptNumber, env) {
 }
 
 function mapUSCISResponse(receiptNumber, data) {
+  const status = data?.case_status ?? data;
+
   return {
     receiptNumber,
-    formType: firstString(data, ["formType", "form_type", "form", "caseType"]) ?? "USCIS Case",
-    title: firstString(data, ["title", "statusTitle", "caseStatus", "status"]) ?? "Status Updated",
-    description: firstString(data, ["description", "statusDescription", "caseStatusDescription", "message"]) ?? "The case status was updated.",
-    updatedAt: firstString(data, ["updatedAt", "lastUpdated", "modifiedDate"]) ?? new Date().toISOString()
+    formType: firstString(status, ["formType", "form_type", "form", "caseType"]) ?? "USCIS Case",
+    title: firstString(status, ["current_case_status_text_en", "title", "statusTitle", "caseStatus", "status"]) ?? "Status Updated",
+    description: stripHTML(
+      firstString(status, ["current_case_status_desc_en", "description", "statusDescription", "caseStatusDescription", "message"]) ??
+      "The case status was updated."
+    ),
+    updatedAt: normalizedDate(firstString(status, ["modifiedDate", "updatedAt", "lastUpdated", "submittedDate"])) ?? new Date().toISOString()
   };
 }
 
@@ -272,6 +277,35 @@ function firstString(object, keys) {
     if (typeof value === "string" && value.trim()) {
       return value;
     }
+  }
+  return null;
+}
+
+function stripHTML(value) {
+  return value
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizedDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const match = value.match(/^(\d{2})-(\d{2})-(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+  if (match) {
+    const [, month, day, year, hour, minute, second] = match;
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second))).toISOString();
+  }
+
+  const parsed = Date.parse(value);
+  if (Number.isFinite(parsed)) {
+    return new Date(parsed).toISOString();
   }
   return null;
 }
