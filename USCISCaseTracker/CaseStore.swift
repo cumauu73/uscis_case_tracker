@@ -9,8 +9,9 @@ final class CaseStore {
 
     private(set) var cases: [CaseRecord] = []
     var alertMessage: String?
-    var isPremium = false
+    private(set) var isPremium = false
     private let storageKey = "saved-cases-v1"
+    private let premiumStorageKey = "debug-premium-enabled-v1"
     private let service = CaseStatusService()
     private let legacyBackendPlaceholder = "Connect your secure backend to retrieve the latest USCIS status."
 
@@ -23,8 +24,16 @@ final class CaseStore {
     }
 
     init() {
+        loadPremiumStatus()
         load()
     }
+
+    #if DEBUG
+    func setPremiumForTesting(_ isEnabled: Bool) {
+        isPremium = isEnabled
+        UserDefaults.standard.set(isEnabled, forKey: premiumStorageKey)
+    }
+    #endif
 
     func add(receiptNumber: String, nickname: String) -> Bool {
         let number = ReceiptNumber.normalized(receiptNumber)
@@ -116,6 +125,14 @@ final class CaseStore {
             return migrated
         }
         save()
+    }
+
+    private func loadPremiumStatus() {
+        #if DEBUG
+        isPremium = UserDefaults.standard.bool(forKey: premiumStorageKey)
+        #else
+        isPremium = false
+        #endif
     }
 
     private func save() {

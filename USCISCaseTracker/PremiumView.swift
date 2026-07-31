@@ -2,12 +2,14 @@ import SwiftUI
 
 struct PremiumView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(CaseStore.self) private var store
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     header
+                    debugTesting
                     pricing
                     comparison
                     note
@@ -39,6 +41,30 @@ struct PremiumView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(AppTheme.cardBackground, in: RoundedRectangle(cornerRadius: 18))
+    }
+
+    @ViewBuilder
+    private var debugTesting: some View {
+        #if DEBUG
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Testing Only", systemImage: "hammer.fill")
+                .font(.headline)
+                .foregroundStyle(AppTheme.accent)
+            Text(store.isPremium ? "Premium is enabled for this debug build." : "Enable Premium locally to test higher limits and premium UI before StoreKit is connected.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Button(store.isPremium ? "Disable Test Premium" : "Enable Premium for Testing") {
+                store.setPremiumForTesting(!store.isPremium)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(AppTheme.cardBackground, in: RoundedRectangle(cornerRadius: 16))
+        #else
+        EmptyView()
+        #endif
     }
 
     private var pricing: some View {

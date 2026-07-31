@@ -55,9 +55,9 @@ struct CaseListView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { showingPremium = true } label: {
-                        Image(systemName: "star.circle")
+                        Image(systemName: store.isPremium ? "star.circle.fill" : "star.circle")
                     }
-                    .accessibilityLabel("Premium")
+                    .accessibilityLabel(store.isPremium ? "Premium active" : "Premium")
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
