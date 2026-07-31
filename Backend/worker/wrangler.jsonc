@@ -15,6 +15,7 @@
   },
   "vars": {
     "APP_ENV": "production",
+    "USCIS_TOKEN_URL": "https://api-int.uscis.gov/oauth/accesstoken",
     "USCIS_BASE_URL": "https://api-int.uscis.gov",
     "USCIS_CASE_STATUS_PATH_TEMPLATE": "/case-status/{receiptNumber}",
     "USCIS_SCOPE": "",
