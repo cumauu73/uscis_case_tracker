@@ -55,7 +55,7 @@ struct CaseDetailView: View {
                     Text("History")
                         .font(.title3.bold())
                     if current.events.isEmpty {
-                        Text("Status changes will appear here after the backend is connected.")
+                        Text("Status history will appear here after your first successful status check.")
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(current.events) { event in
