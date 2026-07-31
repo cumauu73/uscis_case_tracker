@@ -4,10 +4,22 @@ import Observation
 @MainActor
 @Observable
 final class CaseStore {
+    static let freeCaseLimit = 2
+    static let premiumCaseLimit = 10
+
     private(set) var cases: [CaseRecord] = []
     var alertMessage: String?
+    var isPremium = false
     private let storageKey = "saved-cases-v1"
     private let service = CaseStatusService()
+
+    var caseLimit: Int {
+        isPremium ? Self.premiumCaseLimit : Self.freeCaseLimit
+    }
+
+    var canAddCase: Bool {
+        cases.count < caseLimit
+    }
 
     init() {
         load()
@@ -15,7 +27,8 @@ final class CaseStore {
 
     func add(receiptNumber: String, nickname: String) -> Bool {
         let number = ReceiptNumber.normalized(receiptNumber)
-        guard ReceiptNumber.isValid(number),
+        guard canAddCase,
+              ReceiptNumber.isValid(number),
               !cases.contains(where: { $0.receiptNumber == number }) else {
             return false
         }

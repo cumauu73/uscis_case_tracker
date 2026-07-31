@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7048199830194C46007A0033 /* AppLogoProposal.svg in Resources */ = {isa = PBXBuildFile; fileRef = 7048199730194C46007A0033 /* AppLogoProposal.svg */; };
 		7048199A30194DA6007A0033 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7048199930194DA6007A0033 /* Assets.xcassets */; };
+		704819E7301CF57F007A0033 /* PremiumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704819E6301CF57F007A0033 /* PremiumView.swift */; };
 		C00000000000000000000001 /* USCISCaseTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* USCISCaseTrackerApp.swift */; };
 		C00000000000000000000002 /* CaseRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* CaseRecord.swift */; };
 		C00000000000000000000003 /* ReceiptNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* ReceiptNumber.swift */; };
@@ -23,6 +24,7 @@
 /* Begin PBXFileReference section */
 		7048199730194C46007A0033 /* AppLogoProposal.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = AppLogoProposal.svg; sourceTree = "<group>"; };
 		7048199930194DA6007A0033 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		704819E6301CF57F007A0033 /* PremiumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumView.swift; sourceTree = "<group>"; };
 		B00000000000000000000001 /* USCISCaseTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USCISCaseTrackerApp.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* CaseRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaseRecord.swift; sourceTree = "<group>"; };
 		B00000000000000000000003 /* ReceiptNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptNumber.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				B00000000000000000000009 /* AppConfiguration.swift */,
 				7048199630194C38007A0033 /* Branding */,
 				7048199930194DA6007A0033 /* Assets.xcassets */,
+				704819E6301CF57F007A0033 /* PremiumView.swift */,
 			);
 			path = USCISCaseTracker;
 			sourceTree = "<group>";
@@ -164,6 +167,7 @@
 				C00000000000000000000004 /* CaseStatusService.swift in Sources */,
 				C00000000000000000000005 /* CaseStore.swift in Sources */,
 				C00000000000000000000006 /* CaseListView.swift in Sources */,
+				704819E7301CF57F007A0033 /* PremiumView.swift in Sources */,
 				C00000000000000000000007 /* AddCaseView.swift in Sources */,
 				C00000000000000000000008 /* CaseDetailView.swift in Sources */,
 				C00000000000000000000009 /* AppConfiguration.swift in Sources */,

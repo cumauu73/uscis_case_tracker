@@ -3,6 +3,7 @@ import SwiftUI
 struct CaseListView: View {
     @Environment(CaseStore.self) private var store
     @State private var showingAddCase = false
+    @State private var showingPremium = false
 
     var body: some View {
         NavigationStack {
@@ -13,12 +14,22 @@ struct CaseListView: View {
                     } description: {
                         Text("Add a USCIS receipt number to keep your cases organized.")
                     } actions: {
-                        Button("Add a Case") { showingAddCase = true }
+                        Button("Add a Case") { requestAddCase() }
                             .buttonStyle(.borderedProminent)
                         Button("Preview with Demo Case") { store.addDemoCase() }
+                        Button("Compare Free and Premium") { showingPremium = true }
                     }
                 } else {
                     List {
+                        if !store.isPremium {
+                            PremiumUpgradeRow(
+                                usedCount: store.cases.count,
+                                limit: store.caseLimit
+                            ) {
+                                showingPremium = true
+                            }
+                        }
+
                         Section {
                             ForEach(store.cases) { record in
                                 NavigationLink(value: record.id) {
@@ -42,8 +53,15 @@ struct CaseListView: View {
             }
             .navigationTitle("My USCIS Cases")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showingPremium = true } label: {
+                        Image(systemName: "star.circle")
+                    }
+                    .accessibilityLabel("Premium")
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showingAddCase = true } label: {
+                    Button { requestAddCase() } label: {
                         Image(systemName: "plus")
                     }
                     .accessibilityLabel("Add case")
@@ -57,6 +75,9 @@ struct CaseListView: View {
             .sheet(isPresented: $showingAddCase) {
                 AddCaseView()
             }
+            .sheet(isPresented: $showingPremium) {
+                PremiumView()
+            }
             .alert(
                 "Unable to Check Status",
                 isPresented: Binding(
@@ -69,6 +90,47 @@ struct CaseListView: View {
                 Text(store.alertMessage ?? "")
             }
         }
+    }
+
+    private func requestAddCase() {
+        if store.canAddCase {
+            showingAddCase = true
+        } else {
+            showingPremium = true
+        }
+    }
+}
+
+private struct PremiumUpgradeRow: View {
+    let usedCount: Int
+    let limit: Int
+    let action: () -> Void
+
+    var body: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 12) {
+                    Image(systemName: "bell.badge.fill")
+                        .font(.title2)
+                        .foregroundStyle(AppTheme.accent)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Free plan: \(usedCount)/\(limit) cases")
+                            .font(.headline)
+                        Text("Premium adds automatic checks, status-change notifications, and more tracked cases.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Button("See Premium") {
+                    action()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+            .padding(.vertical, 6)
+        }
+        .listRowBackground(AppTheme.cardBackground)
     }
 }
 

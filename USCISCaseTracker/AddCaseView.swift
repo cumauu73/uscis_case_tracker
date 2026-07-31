@@ -6,6 +6,7 @@ struct AddCaseView: View {
     @State private var receiptNumber = ""
     @State private var nickname = ""
     @State private var attemptedSave = false
+    @State private var showingPremium = false
 
     private var normalizedNumber: String {
         ReceiptNumber.normalized(receiptNumber)
@@ -26,6 +27,24 @@ struct AddCaseView: View {
                         Label("Enter 3 letters followed by 10 numbers.", systemImage: "exclamationmark.circle")
                             .font(.caption)
                             .foregroundStyle(.red)
+                    }
+                }
+
+                if !store.canAddCase {
+                    Section {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Label("Free plan limit reached", systemImage: "star.circle.fill")
+                                .font(.headline)
+                                .foregroundStyle(AppTheme.accent)
+                            Text("Free users can track up to \(CaseStore.freeCaseLimit) cases. Premium supports up to \(CaseStore.premiumCaseLimit) cases with automatic checks and notifications.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Button("See Premium") {
+                                showingPremium = true
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .padding(.vertical, 6)
                     }
                 }
 
@@ -50,12 +69,17 @@ struct AddCaseView: View {
                         attemptedSave = true
                         if store.add(receiptNumber: receiptNumber, nickname: nickname) {
                             dismiss()
+                        } else if !store.canAddCase {
+                            showingPremium = true
                         }
                     }
                     .fontWeight(.semibold)
+                    .disabled(!store.canAddCase)
                 }
+            }
+            .sheet(isPresented: $showingPremium) {
+                PremiumView()
             }
         }
     }
 }
-
